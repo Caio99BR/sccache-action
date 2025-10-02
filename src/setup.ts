@@ -16,7 +16,6 @@ import * as core from '@actions/core';
 import {
   downloadTool,
   extractTar,
-  extractZip,
   cacheDir,
   find
 } from '@actions/tool-cache';
@@ -112,17 +111,13 @@ async function downloadSCCache(version: string): Promise<Error | string> {
   core.info(`Correct checksum: ${calculatedChecksum}`);
 
   let sccachePath;
-  if (getExtension() == 'zip') {
-    sccachePath = await extractZip(sccachePackage);
-  } else {
-    sccachePath = await extractTar(sccachePackage);
-  }
+  sccachePath = await extractTar(sccachePackage);
   core.info(`sccache extracted to: ${sccachePath}`);
   return sccachePath;
 }
 
 function getFilename(version: string): Error | string {
-  return `sccache-${version}-${getArch()}-${getPlatform()}.${getExtension()}`;
+  return `sccache-${version}-${getArch()}-${getPlatform()}.tar.gz`;
 }
 
 function getDirname(version: string): Error | string {
@@ -157,10 +152,6 @@ function getPlatform(): Error | string {
     default:
       return Error(`Unsupported platform "${process.platform}"`);
   }
-}
-
-function getExtension(): string {
-  return 'tar.gz';
 }
 
 setup().catch(err => {
