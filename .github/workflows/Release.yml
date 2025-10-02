@@ -48,20 +48,8 @@ jobs:
       # Build setup.ts and show_stats.ts
       - name: Build TypeScript files
         run: |
-          npx @vercel/ncc build src/setup.ts \
-            -o dist/setup \
-            --minify \
-            --external @actions/core \
-            --external @actions/github \
-            --external @actions/io \
-            --external @actions/tool-cache
-          npx @vercel/ncc build src/show_stats.ts \
-            -o dist/show_stats \
-            --minify \
-            --external @actions/core \
-            --external @actions/github \
-            --external @actions/io \
-            --external @actions/tool-cache
+          npx @vercel/ncc build src/setup.ts -o dist/setup --minify
+          npx @vercel/ncc build src/show_stats.ts -o dist/show_stats --minify
 
       # Determine version
       - name: Determine next version
