@@ -54,16 +54,14 @@ jobs:
             --external @actions/core \
             --external @actions/github \
             --external @actions/io \
-            --external @actions/tool-cache \
-            --source-map false
+            --external @actions/tool-cache
           npx @vercel/ncc build src/show_stats.ts \
             -o dist/show_stats \
             --minify \
             --external @actions/core \
             --external @actions/github \
             --external @actions/io \
-            --external @actions/tool-cache \
-            --source-map false
+            --external @actions/tool-cache
 
       # Determine version
       - name: Determine next version
