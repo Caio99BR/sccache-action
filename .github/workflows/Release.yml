@@ -56,7 +56,7 @@ jobs:
         id: get_version
         run: |
           git fetch --tags
-          latest_tag=$(git describe --tags --abbrev=0 || echo "0.0.0")
+          latest_tag=$(git describe --tags --abbrev=0 || echo "v0.0.0")
           echo "Latest tag: $latest_tag"
 
           if [ "${{ github.event.inputs.bump_version }}" = "true" ]; then
@@ -90,20 +90,29 @@ jobs:
           git commit -m "[CI] Update dist build and update files for version ${{ steps.get_version.outputs.version }}" || echo "No changes to commit"
           git push origin HEAD
 
-      # Create Git tag if bump_version is true
+      # Create Git tag with changelog if bump_version is true
       - name: Create Git Tag
         if: ${{ github.event.inputs.bump_version == 'true' }}
         run: |
-          git tag -a ${{ steps.get_version.outputs.version }} -m "Release ${{ steps.get_version.outputs.version }}"
-          git push origin ${{ steps.get_version.outputs.version }}
+          # Get previous tag
+          previous_tag=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1) 2>/dev/null || echo "v0.0.0")
+
+          # Generate changelog
+          changelog="What's changed\n\n"
+          changelog+=$(git log --pretty=format:"  %s by @%an in #%h" "$previous_tag"..HEAD)
+          changelog+="\n\nFull Changelog: $previous_tag...${{ steps.get_version.outputs.version }}"
+
+          # Create annotated tag with changelog
+          git tag -a "v${{ steps.get_version.outputs.version }}" -m "$changelog"
+          git push origin "v${{ steps.get_version.outputs.version }}"
 
       # Publish GitHub Release
       - name: Publish Release
         if: ${{ github.event.inputs.bump_version == 'true' }}
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.get_version.outputs.version }}
-          name: Release ${{ steps.get_version.outputs.version }}
+          tag_name: "v${{ steps.get_version.outputs.version }}"
+          name: v${{ steps.get_version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
